@@ -18,7 +18,8 @@ export default function ProductsPage() {
 
   async function fetchProducts() {
     setLoading(true);
-    const response: ProductsResponse = await servicesApi.getAllProducts();
+    const response: ProductsResponse = await fetch("http://localhost:3000/api/products").then(res => res.json());
+    console.log("🚀 ~ fetchProducts ~ response:", response)
     setProducts(response.data);
     setLoading(false);
   }

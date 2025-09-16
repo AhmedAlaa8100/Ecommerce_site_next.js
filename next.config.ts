@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
         pathname: '/Route-Academy-products/**'
       }
     ]
-  }
+  },
 };
 
 export default nextConfig;

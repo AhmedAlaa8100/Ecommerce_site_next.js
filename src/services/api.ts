@@ -1,15 +1,56 @@
 import { AddToCartResponse, ProductsResponse, SingleProductResponse } from "@/types";
+import { getSession } from "next-auth/react";
 
 class ServicesApi {
 
 
     #baseUrl: string = process.env.NEXT_PUBLIC_BASE_URL ?? "";
 
+    async #getHeaders() {
+        let token = "";
 
-    #getHeaders() {
+        // Client-side: use getSession from next-auth/react
+        if (typeof window !== "undefined") {
+            try {
+                const session = await getSession();
+                token = session?.token ?? "";
+                console.log("🚀 ~ ServicesApi ~ Client-side session:", session);
+            } catch {
+                console.log("Client-side session not available");
+            }
+        } else {
+            // Server-side: try to get token from cookies using next-auth/jwt
+            try {
+                const { cookies } = await import("next/headers");
+                const { getToken } = await import("next-auth/jwt");
+
+                const cookieStore = await cookies();
+
+                // Create a minimal request object for getToken
+                const req = {
+                    headers: {
+                        cookie: cookieStore.toString()
+                    },
+                    cookies: Object.fromEntries(
+                        cookieStore.getAll().map((c: { name: string; value: string }) => [c.name, c.value])
+                    )
+                };
+
+                const decodedToken = await getToken({
+                    req: req as Parameters<typeof getToken>[0]['req'],
+                    secret: process.env.AUTH_SECRET
+                });
+
+                token = decodedToken?.token as string ?? "";
+                console.log("🚀 ~ ServicesApi ~ Server-side token:", token);
+            } catch (error) {
+                console.log("Server-side session error:", error);
+            }
+        }
+
         return {
             "content-type": "application/json",
-            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4YWYxMjJmZmUxZDBkYWEzOGQxNDhmZCIsIm5hbWUiOiJNb2hhbWVkIEFiZCBFbCBNb2F0eSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU2MzAzOTQzLCJleHAiOjE3NjQwNzk5NDN9.NckDzfKxU4EVmLKHg2GYR2lklfuKhAgEBKSr_b7VJ_U"
+            token: token
         }
     }
 
@@ -25,20 +66,49 @@ class ServicesApi {
         ).then((res) => res.json());
     }
 
-    async addProductToCart(productId: string) {
+    async addProductToCart(productId: string): Promise<AddToCartResponse> {
+        const headers = await this.#getHeaders()
         return await fetch(this.#baseUrl + "api/v1/cart", {
             method: 'post',
             body: JSON.stringify({
                 productId
             }),
-            headers: this.#getHeaders()
-        })
+            headers
+        }).then(res => res.json())
     }
 
-
     async getCartProducts(): Promise<AddToCartResponse> {
+        const headers = await this.#getHeaders()
+        console.log("🚀 ~ ServicesApi ~ getCartProducts ~ headers:", headers)
         return await fetch(this.#baseUrl + "api/v1/cart", {
-            headers: this.#getHeaders()
+            headers
+        }).then(res => res.json())
+    }
+
+    async checkout(cartId: string) {
+        const headers = await this.#getHeaders()
+        return await fetch(this.#baseUrl + "api/v1/orders/checkout-session/" + cartId + "?url=http://localhost:3000", {
+            method: 'post',
+            body: JSON.stringify({
+                "shippingAddress": {
+                    "details": "details",
+                    "phone": "01010700999",
+                    "city": "Cairo"
+                }
+            }),
+            headers
+        }).then(res => res.json())
+    }
+
+    async signIn(email: string, password: string) {
+        const headers = await this.#getHeaders()
+        return await fetch(this.#baseUrl + "api/v1/auth/signin", {
+            method: 'post',
+            body: JSON.stringify({
+                email,
+                password
+            }),
+            headers
         }).then(res => res.json())
     }
 

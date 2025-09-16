@@ -3,12 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/interfaces";
 import { Button } from "@/components/ui/button";
-import { Star, ShoppingCart, Heart, Loader2 } from "lucide-react";
+import { ShoppingCart, Heart, Loader2 } from "lucide-react";
 import { renderStars } from "@/helpers/rating";
 import { formatPrice } from "@/helpers/currency";
 import { servicesApi } from "@/services";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { updateCartCount } from "@/redux/slices/cartSlice";
 
 interface ProductCardProps {
   product: Product;
@@ -17,13 +19,14 @@ interface ProductCardProps {
 
 export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const dispatch = useDispatch();
 
   async function handleAddToCart() {
     setIsAddingToCart(true);
-    const response = await servicesApi
-      .addProductToCart(product._id)
-      .then((res) => res.json());
+    const response = await servicesApi.addProductToCart(product._id);
     console.log("🚀 ~ handleAddToCart ~ response:", response);
+    dispatch(updateCartCount(response.numOfCartItems));
+
     setIsAddingToCart(false);
     toast.success(response.message, {
       position: "top-right",
