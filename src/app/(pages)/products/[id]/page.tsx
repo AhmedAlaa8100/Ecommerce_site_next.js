@@ -25,7 +25,6 @@ import toast from "react-hot-toast";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
-
   const [product, setProduct] = useState<Product>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
