@@ -1,7 +1,18 @@
+"use client";
 import { Button } from "@/components/ui/button";
+import { getAllProducts } from "@/redux/slices/productsSlice";
+import { AppDispatch, RootState } from "@/redux/store";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function Home() {
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(getAllProducts());
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-40">
       <div className="text-center space-y-6">

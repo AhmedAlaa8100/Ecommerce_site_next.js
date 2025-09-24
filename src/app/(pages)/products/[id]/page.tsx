@@ -2,37 +2,116 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Product } from "@/interfaces";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
-import { ShoppingCart, Heart, Truck, Shield, RotateCcw } from "lucide-react";
+import {
+  ShoppingCart,
+  Heart,
+  Truck,
+  Shield,
+  RotateCcw,
+  Loader2,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { renderStars } from "@/helpers/rating";
 import { formatPrice } from "@/helpers/currency";
-import { SingleProductResponse } from "@/types";
-import { servicesApi } from "@/services";
+import { SingleProductResponse, WishlistResponse } from "@/types";
+import { apiService } from "@/services";
+import { AddToCartBtn } from "@/components/products";
+import toast from "react-hot-toast";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
-
   const [product, setProduct] = useState<Product>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(-1);
+  const [addToCartLoading, setAddToCartLoading] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [wishIds, setWishIds] = useState<Set<string>>(new Set());
 
   async function fetchProductDetails() {
     setLoading(true);
-    const response: SingleProductResponse = await servicesApi.getProductDetails(
+    const response: SingleProductResponse = await apiService.getProductDetails(
       String(id)
     );
     setProduct(response.data);
     setLoading(false);
   }
 
+  async function handleAddProductToCart() {
+    setAddToCartLoading(true);
+    const data = await apiService.addProductToCart(product?._id ?? "");
+    console.log(data);
+    setAddToCartLoading(false);
+    toast(data.message, {
+      icon: "✅",
+      position: "top-center",
+    });
+  }
+
+  async function handleAddProductToWishlist() {
+    if (isWishlisted) {
+      setWishlistLoading(true);
+      const data = await apiService.removeProductFromWishlist(
+        product?._id ?? ""
+      );
+      setIsWishlisted(false);
+      setWishlistLoading(false);
+      setWishIds((prev) => {
+        const next = new Set(prev);
+        if (product?._id) next.delete(product._id);
+        return next;
+      });
+      toast(data.message, {
+        icon: "💔",
+        position: "top-center",
+      });
+    } else {
+      setWishlistLoading(true);
+      const data = await apiService.addProductToWishlist(product?._id ?? "");
+      setWishlistLoading(false);
+      if (data.status === "success") {
+        toast(data.message, {
+          icon: "❤️",
+          position: "top-center",
+        });
+        setIsWishlisted(true);
+        setWishIds((prev) => {
+          const next = new Set(prev);
+          if (product?._id) next.add(product._id);
+          return next;
+        });
+      } else {
+        toast.error(data.message || "Failed to add product to wishlist", {
+          position: "top-center",
+        });
+      }
+    }
+  }
+
   useEffect(() => {
     fetchProductDetails();
   }, []);
+
+  useEffect(() => {
+    async function getLoggedWishlist() {
+      const wishlist: WishlistResponse =
+        await apiService.getLoggedUserWishlist();
+      setWishIds(new Set((wishlist?.data ?? []).map((p: Product) => p._id)));
+    }
+    getLoggedWishlist();
+  }, []);
+
+  useEffect(() => {
+    if (product?._id) {
+      setIsWishlisted(wishIds.has(product._id));
+    }
+  }, [product?._id, wishIds]);
 
   if (loading) {
     return (
@@ -141,7 +220,7 @@ export default function ProductDetailPage() {
           {/* Category & Subcategory */}
           <div className="flex flex-wrap gap-2">
             <Link
-              href={``}
+              href={`/categories/${product.category._id}`}
               className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm hover:bg-secondary/80 transition-colors"
             >
               {product.category.name}
@@ -172,16 +251,22 @@ export default function ProductDetailPage() {
 
           {/* Action Buttons */}
           <div className="flex gap-4">
+            <AddToCartBtn
+              addToCartLoading={addToCartLoading}
+              handleAddProductToCart={handleAddProductToCart}
+            />
             <Button
+              variant="outline"
               size="lg"
-              className="flex-1"
-              disabled={product.quantity === 0}
+              onClick={handleAddProductToWishlist}
             >
-              <ShoppingCart className="h-5 w-5 mr-2" />
-              Add to Cart
-            </Button>
-            <Button variant="outline" size="lg">
-              <Heart className="h-5 w-5" />
+              {wishlistLoading ? (
+                <Loader2 className="animate-spin" />
+              ) : isWishlisted ? (
+                <X className="h-5 w-5 text-gray-500" />
+              ) : (
+                <Heart className="h-5 w-5 text-red-500" />
+              )}
             </Button>
           </div>
 

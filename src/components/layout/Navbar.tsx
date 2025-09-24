@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ShoppingCart, Search, User, Menu, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ShoppingCart, Search, User, Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components";
 import {
   NavigationMenu,
@@ -11,17 +11,38 @@ import {
   NavigationMenuList,
 } from "@/components";
 import { cn } from "@/lib/utils";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getCartCount } from "@/redux/slices/cartSlice";
+import { AppDispatch, RootState } from "@/redux/store";
+import { signOut, useSession } from "next-auth/react";
 
 export function Navbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const session = useSession();
+  console.log("🚀 ~ Navbar ~ session:", session);
+  const router = useRouter();
+  const { cartCount } = useSelector((state: RootState) => state.cart);
+
+  const dispatch = useDispatch<AppDispatch>();
 
   const navItems = [
     { href: "/products", label: "Products" },
     { href: "/brands", label: "Brands" },
     { href: "/categories", label: "Categories" },
   ];
+
+  useEffect(() => {
+    dispatch(getCartCount());
+  }, []);
+
+  async function handleSignOut() {
+    await signOut({
+      redirect: false,
+    });
+    router.push("/auth/login");
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -65,22 +86,38 @@ export function Navbar() {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-2">
-            {/* User Account */}
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
-              <span className="sr-only">Account</span>
-            </Button>
+            {session.status == "loading" ? (
+              ""
+            ) : session.status == "authenticated" ? (
+              <>
+                {/* User Account */}
+                <Button variant="ghost" size="icon">
+                  <User className="h-5 w-5" />
+                  <span className="sr-only">Account</span>
+                </Button>
 
-            {/* Shopping Cart */}
-            <Button variant="ghost" size="icon" className="relative">
-              <Link href={"/cart"}>
-                <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-xs text-primary-foreground flex items-center justify-center">
-                  0
-                </span>
-                <span className="sr-only">Shopping cart</span>
-              </Link>
-            </Button>
+                {/* Shopping Cart */}
+                <Link href={"/cart"}>
+                  <Button variant="ghost" size="icon" className="relative">
+                    <ShoppingCart className="h-5 w-5" />
+                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-xs text-primary-foreground flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                    <span className="sr-only">Shopping cart</span>
+                  </Button>
+                </Link>
+
+                {/* Logout */}
+                <Button onClick={handleSignOut} variant="ghost" size="icon">
+                  <LogOut className="h-5 w-5" />
+                  <span className="sr-only">Logout</span>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href={"/auth/login"}>Login</Link>
+              </>
+            )}
 
             {/* Mobile Menu */}
             <Button

@@ -1,8 +1,9 @@
-import { Product, Brand, Category, ApiResponse, CartData } from '@/interfaces';
+import { Product, Brand, Category, ApiResponse, Subcategory } from '@/interfaces';
 
 export type ProductsResponse = ApiResponse<Product>;
 export type BrandsResponse = ApiResponse<Brand>;
 export type CategoriesResponse = ApiResponse<Category>;
+export type SubCategoriesResponse = ApiResponse<Subcategory>;
 
 // Single item responses
 export type SingleBrandResponse = {
@@ -12,6 +13,11 @@ export type SingleBrandResponse = {
 export type SingleCategoryResponse = {
   data: Category;
 }
+
+export type SingleSubcategoryResponse = {
+  data: Subcategory;
+}
+
 
 export type SingleProductResponse = {
   data: Product;
@@ -23,5 +29,23 @@ export type AddToCartResponse = {
   message: string;
   numOfCartItems: number;
   cartId: string;
-  data: CartData;
+      data: {
+      _id: string,
+      cartOwner: string,
+      products: {
+        count: number,
+        _id: string,
+        product: string,
+        price: number
+      }[],
+      createdAt: string,
+      updatedAt: string,
+      totalCartPrice: number
+    }
+};
+
+export type WishlistResponse = {
+  status: string;
+  count: number;
+  data: Product[];
 };

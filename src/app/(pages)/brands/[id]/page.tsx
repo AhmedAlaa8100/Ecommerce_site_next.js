@@ -1,24 +1,36 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Product } from "@/interfaces";
-import { ProductCard } from "@/components/products/ProductCard";
+import { useParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { Product, Brand } from "@/interfaces";
+import { ProductCard } from "@/components/products";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
-import { Button } from "@/components/ui/button";
-import { Search, Filter, Grid, List } from "lucide-react";
-import { ProductsResponse, WishlistResponse } from "@/types";
-import { cn } from "@/lib/utils";
 import { apiService } from "@/services";
-import { set } from "zod";
+import { Button } from "@/components/ui/button";
+import { Grid, List } from "lucide-react";
+import {
+  ProductsResponse,
+  SingleBrandResponse,
+  WishlistResponse,
+} from "@/types";
 import toast from "react-hot-toast";
 
-export default function ProductsPage() {
+export default function BrandDetailsPage() {
+  const params = useParams<{ id: string }>();
+  const brandId = params?.id;
+
+  const [brand, setBrand] = useState<Brand | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [wishlist, setWishlist] = useState<WishlistResponse>();
   const [wishIds, setWishIds] = useState<Set<string>>(new Set());
+
+  const filteredProducts = useMemo(
+    () => products.filter((p) => p.brand?._id === brandId),
+    [products, brandId]
+  );
 
   const handleAddProductToWishlist = useCallback(
     async (
@@ -39,25 +51,15 @@ export default function ProductsPage() {
           next.delete(productId);
           return next;
         });
-        toast(data.message, {
-          icon: "💔",
-          position: "top-center",
-        });
+        toast(data.message, { icon: "💔", position: "top-center" });
       } else {
         setWishlistLoading(true);
         const data = await apiService.addProductToWishlist(productId ?? "");
         setWishlistLoading(false);
         if (data.status === "success") {
-          toast(data.message, {
-            icon: "❤️",
-            position: "top-center",
-          });
+          toast(data.message, { icon: "❤️", position: "top-center" });
           setIsWishlisted(true);
-          setWishIds((prev) => {
-            const next = new Set(prev);
-            next.add(productId);
-            return next;
-          });
+          setWishIds((prev) => new Set(prev).add(productId));
         } else {
           toast.error(data.message || "Failed to add product to wishlist", {
             position: "top-center",
@@ -68,35 +70,40 @@ export default function ProductsPage() {
     []
   );
 
-  async function getLoggedWishlist() {
-    const wishlist = await apiService.getLoggedUserWishlist();
-    console.log("🚀 ~ getLoggedWishlist ~ wishlist:", wishlist);
-    setWishlist(wishlist);
-    setWishIds(new Set((wishlist?.data ?? []).map((p: Product) => p._id)));
-  }
-
   const checkIsWishlisted = useCallback(
     (setIsWishlisted: (value: boolean) => void, productId: string) => {
-      const isInWishlist = wishIds.has(productId);
-      setIsWishlisted(isInWishlist ?? false);
+      setIsWishlisted(wishIds.has(productId));
     },
     [wishIds]
   );
 
-  async function fetchProducts() {
-    setLoading(true);
-    const response: ProductsResponse = await apiService.getAllProducts();
-    console.log("🚀 ~ fetchProducts ~ response:", response);
-    setProducts(response.data);
-    setLoading(false);
+  async function fetchData() {
+    try {
+      setLoading(true);
+      setError(null);
+      const [brandRes, productsRes, wishlistRes] = await Promise.all([
+        apiService.getSpecificBrand(
+          String(brandId)
+        ) as Promise<SingleBrandResponse>,
+        apiService.getAllProducts() as Promise<ProductsResponse>,
+        apiService.getLoggedUserWishlist() as Promise<WishlistResponse>,
+      ]);
+      setBrand(brandRes?.data ?? null);
+      setProducts(productsRes?.data ?? []);
+      setWishIds(new Set((wishlistRes?.data ?? []).map((p: Product) => p._id)));
+    } catch (err) {
+      setError("Failed to load brand details. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
-    fetchProducts();
-    getLoggedWishlist();
-  }, []);
+    if (!brandId) return;
+    fetchData();
+  }, [brandId]);
 
-  if (loading && products.length === 0) {
+  if (loading && !brand) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center min-h-[400px]">
@@ -111,7 +118,7 @@ export default function ProductsPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <p className="text-red-500 mb-4">{error}</p>
-          <Button>Try Again</Button>
+          <Button onClick={fetchData}>Try Again</Button>
         </div>
       </div>
     );
@@ -120,13 +127,27 @@ export default function ProductsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Products</h1>
-        <p className="text-muted-foreground">
-          Discover amazing products from our collection
-        </p>
+      <div className="mb-8 flex items-center gap-4">
+        {brand?.image ? (
+          <div className="relative h-16 w-16 rounded-md overflow-hidden bg-muted/30 border">
+            <Image
+              src={brand.image}
+              alt={brand?.name ?? "Brand"}
+              fill
+              sizes="64px"
+              className="object-contain p-2"
+            />
+          </div>
+        ) : null}
+        <div>
+          <h1 className="text-3xl font-bold mb-1">{brand?.name ?? "Brand"}</h1>
+          <p className="text-muted-foreground">
+            Browse products from {brand?.name}
+          </p>
+        </div>
       </div>
 
+      {/* View toggle */}
       <div className="flex items-center mb-10 justify-end p-2">
         <div className="flex items-center border rounded-md">
           <Button
@@ -150,14 +171,13 @@ export default function ProductsPage() {
 
       {/* Products Grid */}
       <div
-        className={cn(
-          "grid gap-6",
+        className={
           viewMode === "grid"
-            ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-            : "grid-cols-1"
-        )}
+            ? "grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+            : "grid gap-6 grid-cols-1"
+        }
       >
-        {products.map((product) => (
+        {filteredProducts.map((product) => (
           <ProductCard
             key={product._id}
             product={product}
