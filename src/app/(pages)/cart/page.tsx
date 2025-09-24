@@ -1,10 +1,11 @@
-import { servicesApi } from "@/services";
+import { apiService } from "@/services";
 import React from "react";
-import InnerCart from "./InnerCart";
+import { CartContainer } from "./InnerCart";
+
 
 export default async function Cart() {
   async function fetchCartProducts() {
-    return await servicesApi.getCartProducts();
+    return await apiService.getLoggedUserCart();
   }
 
   const response = await fetchCartProducts();
@@ -12,7 +13,7 @@ export default async function Cart() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <InnerCart response={response} />
+      <CartContainer cartData={response} />
     </div>
   );
 }

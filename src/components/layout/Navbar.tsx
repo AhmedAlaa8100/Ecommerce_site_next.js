@@ -21,10 +21,8 @@ export function Navbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const session = useSession();
-  console.log("🚀 ~ Navbar ~ session:", session)
+  console.log("🚀 ~ Navbar ~ session:", session);
   const router = useRouter();
-
-  const { count } = useSelector((state: RootState) => state.counter);
   const { cartCount } = useSelector((state: RootState) => state.cart);
 
   const dispatch = useDispatch<AppDispatch>();
@@ -57,7 +55,7 @@ export function Navbar() {
                 T
               </span>
             </div>
-            <span className="font-bold text-xl">TechMart {count}</span>
+            <span className="font-bold text-xl">TechMart</span>
           </Link>
 
           {/* Desktop Navigation */}

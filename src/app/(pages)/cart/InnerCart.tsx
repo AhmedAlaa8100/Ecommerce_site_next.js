@@ -1,107 +1,137 @@
 "use client";
-import { Button } from "@/components";
+import { Button, CartProduct } from "@/components";
 import { formatPrice } from "@/helpers/currency";
-import { servicesApi } from "@/services";
+import { CartProduct as CartProductI, CartResponse } from "@/interfaces";
+import { AppDispatch, RootState } from "@/redux/store";
+import { apiService } from "@/services/api";
 import { AddToCartResponse } from "@/types";
-import { Loader2, Minus, Plus, Trash2 } from "lucide-react";
-import Image from "next/image";
+import { Separator } from "@radix-ui/react-separator";
+import { Loader2, Trash2 } from "lucide-react";
 import Link from "next/link";
-import React, { useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
 
-export default function InnerCart({
-  response,
-}: {
-  response: AddToCartResponse;
-}) {
+interface CartContainerProps {
+  cartData: CartResponse;
+}
+
+export function CartContainer({ cartData }: CartContainerProps) {
+  const [innerCartData, setInnerCartData] = useState<CartResponse>(cartData);
+  const [isClearingCart, setIsClearingCart] = useState<boolean>(false);
   const [checkingOut, setCheckingOut] = useState(false);
+  const { cartCount } = useSelector((state: RootState) => state.cart);
+  const dispatch = useDispatch<AppDispatch>();
 
   async function checkout() {
     setCheckingOut(true);
-    const data = await servicesApi.checkout(response.cartId);
+    const data = await apiService.checkout(cartData.cartId);
     setCheckingOut(false);
-
     location.href = data.session.url;
+  }
+  async function handleRemoveCartItem(
+    productId: string,
+    setIsRemovingItem: (newState: boolean) => void
+  ) {
+    setIsRemovingItem(true);
+    const response = await apiService.removeSpecificCartItem(productId);
+    setIsRemovingItem(false);
+    if (response.status == "success") {
+      toast.success("Product removed successfully", {
+        position: "top-right",
+      });
+      const newCartData: CartResponse = await apiService.getLoggedUserCart();
+      setInnerCartData(newCartData);
+      dispatch({
+        type: "cart/updateCartCount",
+        payload: newCartData.numOfCartItems,
+      });
+    } else {
+      toast.error(response.message, {
+        position: "top-right",
+      });
+    }
+  }
+
+  async function handleClearCart() {
+    setIsClearingCart(true);
+    const response = await apiService.clearCart();
+    setIsClearingCart(false);
+    if (response.message == "success") {
+      toast.success("Cart Cleared successfully", {
+        position: "top-right",
+      });
+      const newCartData: CartResponse = await apiService.getLoggedUserCart();
+      setInnerCartData(newCartData);
+      dispatch({ type: "cart/updateCartCount", payload: 0 });
+    } else {
+      toast.error(response.message, {
+        position: "top-right",
+      });
+    }
+  }
+
+  async function handleUpdateCartProductCount(
+    productId: string,
+    count: number
+  ) {
+    const response = await apiService.updateCartProductCount(productId, count);
+    if (response.status == "success") {
+      const newCartData: CartResponse = await apiService.getLoggedUserCart();
+      setInnerCartData(newCartData);
+      dispatch({
+        type: "cart/updateCartCount",
+        payload: newCartData.numOfCartItems,
+      });
+    }
   }
 
   return (
     <>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">
-          Shopping Cart
-        </h1>
-        {response.numOfCartItems > 0 && (
+        <h1 className="text-3xl font-bold mb-4">Shopping Cart</h1>
+        {innerCartData.numOfCartItems > 0 && (
           <p className="text-muted-foreground">
-            {response.numOfCartItems} item
-            {response.numOfCartItems !== 1 ? "s" : ""} in your cart
+            {innerCartData.numOfCartItems} item
+            {innerCartData.numOfCartItems !== 1 ? "s" : ""} in your cart
           </p>
         )}
       </div>
-      {response.numOfCartItems > 0 ? (
+
+      {innerCartData.numOfCartItems > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2">
             <div className="space-y-4">
-              {response.data.products.map((item) => (
-                <div
+              {innerCartData.data.products.map((item) => (
+                <CartProduct
                   key={item._id}
-                  className="flex gap-4 p-4 border rounded-lg"
-                >
-                  <div className="relative w-20 h-20 flex-shrink-0">
-                    <Image
-                      src={item.product.imageCover}
-                      alt={item.product.title}
-                      fill
-                      className="object-cover rounded-md"
-                      sizes="80px"
-                    />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold line-clamp-2">
-                      <Link
-                        href={`/products/${item.product.id}`}
-                        className="hover:text-primary transition-colors"
-                      >
-                        {item.product.title}
-                      </Link>
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {item.product.brand?.name}
-                    </p>
-                    <p className="font-semibold text-primary mt-2">
-                      {formatPrice(item.price)}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-2">
-                    <Button variant="ghost" size="sm">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="w-8 text-center">{item.count}</span>
-                      <Button variant="outline" size="sm">
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                  item={item}
+                  onRemoveItem={handleRemoveCartItem}
+                  onUpdateItemCount={handleUpdateCartProductCount}
+                />
               ))}
             </div>
 
             {/* Clear Cart */}
             <div className="mt-6">
-              <Button variant="outline">
-                <Trash2 className="h-4 w-4 mr-2" />
+              <Button
+                disabled={isClearingCart}
+                onClick={handleClearCart}
+                variant="outline"
+              >
+                {isClearingCart ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4 mr-2" />
+                )}
                 Clear Cart
               </Button>
             </div>
           </div>
 
+          {/* Order Summary */}
           {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="border rounded-lg p-6 sticky top-4">
@@ -109,8 +139,8 @@ export default function InnerCart({
 
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between">
-                  <span>Subtotal ({response.numOfCartItems} items)</span>
-                  <span>{formatPrice(response.data.totalCartPrice)}</span>
+                  <span>Subtotal ({cartData.numOfCartItems} items)</span>
+                  <span>{formatPrice(cartData.data.totalCartPrice)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
@@ -122,7 +152,7 @@ export default function InnerCart({
 
               <div className="flex justify-between font-semibold text-lg mb-6">
                 <span>Total</span>
-                <span>{formatPrice(response.data.totalCartPrice)}</span>
+                <span>{formatPrice(cartData.data.totalCartPrice)}</span>
               </div>
 
               <Button

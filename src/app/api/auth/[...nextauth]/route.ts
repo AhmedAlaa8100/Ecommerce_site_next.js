@@ -1,4 +1,4 @@
-import { servicesApi } from "@/services"
+import { apiService } from "@/services"
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 
@@ -11,7 +11,7 @@ const handler = NextAuth({
                 password: { label: "Password", type: "password", placeholder: "**************" }
             },
             async authorize(credentials) {
-                const res = await servicesApi.signIn(credentials?.email ?? "", credentials?.password ?? "")
+                const res = await apiService.signIn(credentials?.email ?? "", credentials?.password ?? "")
 
                 // If no error and we have user data, return it
                 if (res.message == "success" && res.user) {

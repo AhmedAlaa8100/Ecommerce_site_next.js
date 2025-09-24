@@ -1,10 +1,10 @@
 import { AddToCartResponse, ProductsResponse, SingleProductResponse } from "@/types";
 import { getSession } from "next-auth/react";
+import { CartResponse } from "@/interfaces";
+import { WishlistResponse } from "@/types";
 
-class ServicesApi {
-
-
-    #baseUrl: string = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+class servicesApi {
+    #baseUrl: string = process.env.NEXT_PUBLIC_BASE_URL!;
 
     async #getHeaders() {
         let token = "";
@@ -60,28 +60,73 @@ class ServicesApi {
         ).then((res) => res.json());
     }
 
+        async addProductToCart(productId: string): Promise<AddToCartResponse> {
+        return await fetch(this.#baseUrl + "api/v1/cart", {
+            method: 'POST',
+            body: JSON.stringify({
+                productId
+            }),
+            headers: await this.#getHeaders()
+        }).then(res => res.json())
+    }
+
     async getProductDetails(productId: string): Promise<SingleProductResponse> {
         return await fetch(
             this.#baseUrl + "api/v1/products/" + productId
         ).then((res) => res.json());
     }
 
-    async addProductToCart(productId: string): Promise<AddToCartResponse> {
-        const headers = await this.#getHeaders()
-        return await fetch(this.#baseUrl + "api/v1/cart", {
-            method: 'post',
+    async addProductToWishlist(productId: string): Promise<any> {
+        return await fetch(this.#baseUrl + "api/v1/wishlist", {
+            method: 'POST',
             body: JSON.stringify({
                 productId
             }),
-            headers
+            headers: await this.#getHeaders()
         }).then(res => res.json())
     }
 
-    async getCartProducts(): Promise<AddToCartResponse> {
-        const headers = await this.#getHeaders()
-        console.log("🚀 ~ ServicesApi ~ getCartProducts ~ headers:", headers)
+    async removeProductFromWishlist(productId: string): Promise<any> {
+        return await fetch(this.#baseUrl + "api/v1/wishlist/" + productId, {
+            method: 'delete',
+            headers: await this.#getHeaders()
+        }).then(res => res.json())
+    }
+
+
+    async getLoggedUserWishlist(): Promise<WishlistResponse> {
+        return await fetch(this.#baseUrl + "api/v1/wishlist", {
+            headers: await this.#getHeaders()
+        }).then(res => res.json())
+    }
+
+    async getLoggedUserCart(): Promise<CartResponse> {
         return await fetch(this.#baseUrl + "api/v1/cart", {
-            headers
+            headers: await this.#getHeaders()
+        }).then(res => res.json())
+    }
+
+    async removeSpecificCartItem(productId: string): Promise<any> {
+        return await fetch(this.#baseUrl + "api/v1/cart/" + productId, {
+            headers: await this.#getHeaders(),
+            method: 'delete'
+        }).then(res => res.json())
+    }
+
+    async clearCart(): Promise<any> {
+        return await fetch(this.#baseUrl + "api/v1/cart", {
+            headers: await this.#getHeaders(),
+            method: 'delete'
+        }).then(res => res.json())
+    }
+
+    async updateCartProductCount(productId: string, count: number): Promise<any> {
+        return await fetch(this.#baseUrl + "api/v1/cart/" + productId, {
+            method: 'put',
+            body: JSON.stringify({
+                count
+            }),
+            headers: await this.#getHeaders()
         }).then(res => res.json())
     }
 
@@ -114,5 +159,7 @@ class ServicesApi {
 
 }
 
-export const servicesApi = new ServicesApi()
+export const apiService = new servicesApi()
+
+
 

@@ -3,35 +3,58 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/interfaces";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Heart, Loader2 } from "lucide-react";
+import { ShoppingCart, Heart, X, Loader2 } from "lucide-react";
 import { renderStars } from "@/helpers/rating";
 import { formatPrice } from "@/helpers/currency";
-import { servicesApi } from "@/services";
-import { useState } from "react";
+import { apiService } from "@/services";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { updateCartCount } from "@/redux/slices/cartSlice";
+import { AddToCartBtn } from "./AddToCartBtn";
 
 interface ProductCardProps {
   product: Product;
   viewMode?: "grid" | "list";
+  handleAddProductToWishlist?: (
+    productId: string,
+    isWishlisted: boolean,
+    setIsWishlisted: (value: boolean) => void,
+    setWishlistLoading: (value: boolean) => void
+  ) => Promise<void> | void;
+  checkIsWishlisted?: (
+    setIsWishlisted: (value: boolean) => void,
+    productId: string
+  ) => Promise<void> | void;
 }
 
-export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
+export function ProductCard({
+  product,
+  viewMode = "grid",
+  handleAddProductToWishlist,
+  checkIsWishlisted,
+}: ProductCardProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
   const dispatch = useDispatch();
 
   async function handleAddToCart() {
     setIsAddingToCart(true);
-    const response = await servicesApi.addProductToCart(product._id);
+    const response = await apiService.addProductToCart(product._id);
     console.log("🚀 ~ handleAddToCart ~ response:", response);
     dispatch(updateCartCount(response.numOfCartItems));
 
     setIsAddingToCart(false);
     toast.success(response.message, {
-      position: "top-right",
+      position: "top-center",
     });
   }
+
+  useEffect(() => {
+    checkIsWishlisted?.(setIsWishlisted, product._id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product._id, checkIsWishlisted]);
 
   if (viewMode === "list") {
     return (
@@ -56,8 +79,25 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                 {product.title}
               </Link>
             </h3>
-            <Button variant="ghost" size="sm">
-              <Heart className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                handleAddProductToWishlist?.(
+                  product._id,
+                  isWishlisted,
+                  setIsWishlisted,
+                  setWishlistLoading
+                )
+              }
+            >
+              {wishlistLoading ? (
+                <Loader2 className="animate-spin" />
+              ) : isWishlisted ? (
+                <X className="h-5 w-5 text-gray-500" />
+              ) : (
+                <Heart className="h-5 w-5 text-red-500" />
+              )}
             </Button>
           </div>
 
@@ -105,7 +145,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
               </div>
             </div>
 
-            <Button>
+            <Button onClick={() => handleAddToCart()}>
               <ShoppingCart className="h-4 w-4 mr-2" />
               Add to Cart
             </Button>
@@ -132,8 +172,22 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
           variant="ghost"
           size="sm"
           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 hover:bg-white"
+          onClick={() =>
+            handleAddProductToWishlist?.(
+              product._id,
+              isWishlisted,
+              setIsWishlisted,
+              setWishlistLoading
+            )
+          }
         >
-          <Heart className="h-4 w-4" />
+          {wishlistLoading ? (
+            <Loader2 className="animate-spin" />
+          ) : isWishlisted ? (
+            <X className="h-5 w-5 text-gray-500" />
+          ) : (
+            <Heart className="h-5 w-5 text-red-500" />
+          )}
         </Button>
 
         {/* Badge for sold items */}
@@ -190,16 +244,10 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
         </div>
 
         {/* Add to Cart Button */}
-        <Button
-          disabled={isAddingToCart || product.quantity == 0}
-          onClick={handleAddToCart}
-          className="w-full"
-          size="sm"
-        >
-          {isAddingToCart && <Loader2 className="animate-spin" />}
-          <ShoppingCart className="h-4 w-4 mr-2" />
-          Add to Cart
-        </Button>
+        <AddToCartBtn
+          addToCartLoading={isAddingToCart}
+          handleAddProductToCart={handleAddToCart}
+        />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { Product } from "@/interfaces";
-import { servicesApi } from "@/services";
+import { apiService } from "@/services";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 interface ProductsInitialState {
@@ -13,7 +13,7 @@ const initialState: ProductsInitialState = {
 
 
 export const getAllProducts = createAsyncThunk("products/getAllProducts", async () => {
-    return await servicesApi.getAllProducts();
+    return await apiService.getAllProducts();
 })
 
 

@@ -1,4 +1,4 @@
-import { servicesApi } from "@/services";
+import { apiService } from "@/services";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 
@@ -8,7 +8,7 @@ const initialState = {
 
 
 export const getCartCount = createAsyncThunk("cart/getCartCount", async () => {
-    return await servicesApi.getCartProducts();
+    return await apiService.getLoggedUserCart();
 })
 
 const cartSlice = createSlice({

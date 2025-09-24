@@ -11,7 +11,7 @@ export default function ProvidersContainer({
 }) {
   return (
     <SessionProvider>
-      <Provider store={store}>{children}</Provider>
+        <Provider store={store}>{children}</Provider>
     </SessionProvider>
   );
 }

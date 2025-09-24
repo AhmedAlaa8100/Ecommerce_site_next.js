@@ -11,8 +11,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
 
 const footerSections = [
   {
@@ -65,7 +63,6 @@ const socialLinks = [
 ];
 
 export function Footer() {
-  const { count } = useSelector((state: RootState) => state.counter);
   return (
     <footer className="bg-muted/30 border-t">
       <div className="container mx-auto px-4 py-12">
@@ -79,7 +76,7 @@ export function Footer() {
                   T
                 </span>
               </div>
-              <span className="font-bold text-xl">TechMart {count}</span>
+              <span className="font-bold text-xl">TechMart</span>
             </Link>
             <p className="text-muted-foreground mb-4 max-w-md">
               Your one-stop destination for the latest technology, fashion, and
