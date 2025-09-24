@@ -220,7 +220,7 @@ export default function ProductDetailPage() {
           {/* Category & Subcategory */}
           <div className="flex flex-wrap gap-2">
             <Link
-              href={``}
+              href={`/categories/${product.category._id}`}
               className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm hover:bg-secondary/80 transition-colors"
             >
               {product.category.name}

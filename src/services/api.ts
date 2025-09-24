@@ -6,6 +6,8 @@ import {
   SingleBrandResponse,
   SingleCategoryResponse,
   SingleProductResponse,
+  SingleSubcategoryResponse,
+  SubCategoriesResponse,
 } from "@/types";
 import { getSession } from "next-auth/react";
 import { CartResponse } from "@/interfaces";
@@ -193,6 +195,18 @@ class servicesApi {
       res.json()
     );
   }
-}
+
+  async getAllSubcategories(): Promise<SubCategoriesResponse> {
+    return await fetch(this.#baseUrl + "api/v1/subcategories").then((res) =>
+      res.json()
+    );
+  }
+
+  async getSpecificSubcategory(subcategoryId: string): Promise<SingleSubcategoryResponse> {
+    return await fetch(this.#baseUrl + "api/v1/subcategories/" + subcategoryId).then((res) =>
+      res.json()
+    );
+  }
+  }
 
 export const apiService = new servicesApi();
