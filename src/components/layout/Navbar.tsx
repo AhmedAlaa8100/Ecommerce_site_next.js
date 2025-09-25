@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ShoppingCart, Search, User, Menu, X, LogOut } from "lucide-react";
+import { ShoppingCart, Search, User, Menu, X, LogOut, Loader2 } from "lucide-react";
 import { Button } from "@/components";
 import {
   NavigationMenu,
@@ -13,7 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getCartCount } from "@/redux/slices/cartSlice";
+import { getCartCount, resetCartCount } from "@/redux/slices/cartSlice";
 import { AppDispatch, RootState } from "@/redux/store";
 import { signOut, useSession } from "next-auth/react";
 
@@ -23,7 +23,9 @@ export function Navbar() {
   const session = useSession();
   console.log("🚀 ~ Navbar ~ session:", session);
   const router = useRouter();
-  const { cartCount } = useSelector((state: RootState) => state.cart);
+  const { cartCount, isLoading } = useSelector(
+    (state: RootState) => state.cart
+  );
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -34,10 +36,15 @@ export function Navbar() {
   ];
 
   useEffect(() => {
-    dispatch(getCartCount());
-  }, []);
+    // Only fetch cart count when user is authenticated
+    if (session.status === "authenticated") {
+      dispatch(getCartCount());
+    }
+  }, [session.status, dispatch]);
 
   async function handleSignOut() {
+    // Reset cart count when signing out
+    dispatch(resetCartCount());
     await signOut({
       redirect: false,
     });
@@ -103,7 +110,7 @@ export function Navbar() {
                   <Button variant="ghost" size="icon" className="relative">
                     <ShoppingCart className="h-5 w-5" />
                     <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-xs text-primary-foreground flex items-center justify-center">
-                      {cartCount}
+                      {isLoading ? <Loader2 className="animate-spin" /> : cartCount}
                     </span>
                     <span className="sr-only">Shopping cart</span>
                   </Button>
