@@ -1,4 +1,5 @@
 import { Product, Brand, Category, ApiResponse, Subcategory } from '@/interfaces';
+import { OrderResponse } from '@/interfaces/order';
 
 export type ProductsResponse = ApiResponse<Product>;
 export type BrandsResponse = ApiResponse<Brand>;
@@ -49,3 +50,18 @@ export type WishlistResponse = {
   count: number;
   data: Product[];
 };
+
+export type TokenResponse = {
+  message: string,
+  decoded: {
+      id: string,
+      name: string,
+      role: string,
+      iat: number,
+      exp: number
+  }
+};
+
+export type OrdersResponse = {
+  data: OrderResponse[];
+}
