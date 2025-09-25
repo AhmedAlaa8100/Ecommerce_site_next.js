@@ -2,12 +2,14 @@ import {
   AddToCartResponse,
   BrandsResponse,
   CategoriesResponse,
+  OrdersResponse,
   ProductsResponse,
   SingleBrandResponse,
   SingleCategoryResponse,
   SingleProductResponse,
   SingleSubcategoryResponse,
   SubCategoriesResponse,
+  TokenResponse,
 } from "@/types";
 import { getSession } from "next-auth/react";
 import { CartResponse } from "@/interfaces";
@@ -196,17 +198,29 @@ class servicesApi {
     );
   }
 
-  async getAllSubcategories(): Promise<SubCategoriesResponse> {
-    return await fetch(this.#baseUrl + "api/v1/subcategories").then((res) =>
-      res.json()
-    );
+  async getAllUserOrders(userId: string): Promise<OrdersResponse> {
+    const headers = await this.#getHeaders();
+    const response = await fetch(this.#baseUrl + "api/v1/orders/user/" + userId, {
+      headers,
+    });
+    const data = await response.json();
+    
+    // Handle different response structures
+    if (Array.isArray(data)) {
+      return { data };
+    } else if (data.data && Array.isArray(data.data)) {
+      return data;
+    } else {
+      console.warn("Unexpected response structure:", data);
+      return { data: [] };
+    }
   }
-
-  async getSpecificSubcategory(subcategoryId: string): Promise<SingleSubcategoryResponse> {
-    return await fetch(this.#baseUrl + "api/v1/subcategories/" + subcategoryId).then((res) =>
-      res.json()
-    );
+  async verifytoken(): Promise<TokenResponse> {
+    const headers = await this.#getHeaders();
+    return await fetch(this.#baseUrl + "api/v1/auth/verifyToken", {
+      headers,
+    }).then((res) => res.json());
   }
-  }
+}
 
 export const apiService = new servicesApi();

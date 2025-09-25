@@ -91,10 +91,12 @@ export function Navbar() {
             ) : session.status == "authenticated" ? (
               <>
                 {/* User Account */}
-                <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
-                  <span className="sr-only">Account</span>
-                </Button>
+                <Link href={"/profile"}>
+                  <Button variant="ghost" size="icon">
+                    <User className="h-5 w-5" />
+                    <span className="sr-only">Account</span>
+                  </Button>
+                </Link>
 
                 {/* Shopping Cart */}
                 <Link href={"/cart"}>
