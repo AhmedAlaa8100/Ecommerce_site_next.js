@@ -10,6 +10,15 @@ import { OrderResponse } from "@/interfaces/order";
 export default function OrdersListing({ orders }: { orders: OrderResponse[] }) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
+  // Safe view mode handler
+  const handleViewModeChange = (mode: "grid" | "list") => {
+    try {
+      setViewMode(mode);
+    } catch (error) {
+      console.error("Error changing view mode:", error);
+    }
+  };
+
   if (!orders || orders.length === 0) {
     return (
       <div className="text-center py-12">
@@ -34,7 +43,7 @@ export default function OrdersListing({ orders }: { orders: OrderResponse[] }) {
           <Button
             variant={viewMode === "grid" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setViewMode("grid")}
+            onClick={() => handleViewModeChange("grid")}
             className="rounded-r-none"
           >
             <Grid className="h-4 w-4" />
@@ -42,7 +51,7 @@ export default function OrdersListing({ orders }: { orders: OrderResponse[] }) {
           <Button
             variant={viewMode === "list" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setViewMode("list")}
+            onClick={() => handleViewModeChange("list")}
             className="rounded-l-none"
           >
             <List className="h-4 w-4" />

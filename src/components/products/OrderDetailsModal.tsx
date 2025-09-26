@@ -2,15 +2,10 @@
 import { OrderResponse } from "@/interfaces/order";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/helpers/currency";
-import {
-  X,
-  Calendar,
-  MapPin,
-  CreditCard,
-  User,
-} from "lucide-react";
+import { X, Calendar, MapPin, CreditCard, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect } from "react";
 
 interface OrderDetailsModalProps {
   order: OrderResponse | null;
@@ -23,6 +18,32 @@ export function OrderDetailsModal({
   isOpen,
   onClose,
 }: OrderDetailsModalProps) {
+  // Handle escape key and click outside
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && target.classList.contains("modal-overlay")) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen || !order) return null;
 
   const formatDate = (dateString: string) => {
@@ -48,7 +69,7 @@ export function OrderDetailsModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="modal-overlay fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
@@ -98,9 +119,12 @@ export function OrderDetailsModal({
                   </div>
                   <div className="flex-1">
                     <h4 className="font-semibold text-lg">
-                        <Link href={`/products/${item.product._id}`} className="hover:underline">
-                      {item.product.title}
-                        </Link>
+                      <Link
+                        href={`/products/${item.product._id}`}
+                        className="hover:underline"
+                      >
+                        {item.product.title}
+                      </Link>
                     </h4>
                     <p className="text-sm text-muted-foreground mb-2">
                       {item.product.description}
