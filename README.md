@@ -201,19 +201,21 @@ techmart-ecommerce/
 
 ### Homepage
 
-![Homepage](https://via.placeholder.com/800x400/1f2937/ffffff?text=TechMart+Homepage)
+![Homepage](./Screenshots/HomePage.png)
 
 ### Product Catalog
 
-![Product Catalog](https://via.placeholder.com/800x400/1f2937/ffffff?text=Product+Catalog)
+![Product Catalog](./Screenshots/ProductsPage.png)
+
+![Product info Catalog](./Screenshots/ProducInfotPage.png)
 
 ### Shopping Cart
 
-![Shopping Cart](https://via.placeholder.com/800x400/1f2937/ffffff?text=Shopping+Cart)
+![Shopping Cart](./Screenshots/CartPage.png)
 
 ### User Profile
 
-![User Profile](https://via.placeholder.com/800x400/1f2937/ffffff?text=User+Profile)
+![User Profile](./Screenshots/ProfilePage.png)
 
 ## 🤝 Contributing
 

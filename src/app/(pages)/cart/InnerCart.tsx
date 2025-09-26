@@ -20,8 +20,15 @@ export function CartContainer({ cartData }: CartContainerProps) {
   const [innerCartData, setInnerCartData] = useState<CartResponse>(cartData);
   const [isClearingCart, setIsClearingCart] = useState<boolean>(false);
   const [checkingOut, setCheckingOut] = useState(false);
-  const { cartCount } = useSelector((state: RootState) => state.cart);
   const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    // Only fetch cart count when user is authenticated
+    dispatch({
+      type: "cart/updateCartCount",
+      payload: innerCartData.numOfCartItems,
+    });
+  }, [innerCartData]);
 
   async function checkout() {
     setCheckingOut(true);
@@ -42,10 +49,6 @@ export function CartContainer({ cartData }: CartContainerProps) {
       });
       const newCartData: CartResponse = await apiService.getLoggedUserCart();
       setInnerCartData(newCartData);
-      dispatch({
-        type: "cart/updateCartCount",
-        payload: newCartData.numOfCartItems,
-      });
     } else {
       toast.error(response.message, {
         position: "top-right",
@@ -63,7 +66,6 @@ export function CartContainer({ cartData }: CartContainerProps) {
       });
       const newCartData: CartResponse = await apiService.getLoggedUserCart();
       setInnerCartData(newCartData);
-      dispatch({ type: "cart/updateCartCount", payload: 0 });
     } else {
       toast.error(response.message, {
         position: "top-right",
@@ -79,10 +81,6 @@ export function CartContainer({ cartData }: CartContainerProps) {
     if (response.status == "success") {
       const newCartData: CartResponse = await apiService.getLoggedUserCart();
       setInnerCartData(newCartData);
-      dispatch({
-        type: "cart/updateCartCount",
-        payload: newCartData.numOfCartItems,
-      });
     }
   }
 
@@ -139,8 +137,8 @@ export function CartContainer({ cartData }: CartContainerProps) {
 
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between">
-                  <span>Subtotal ({cartData.numOfCartItems} items)</span>
-                  <span>{formatPrice(cartData.data.totalCartPrice)}</span>
+                  <span>Subtotal ({innerCartData.numOfCartItems} items)</span>
+                  <span>{formatPrice(innerCartData.data.totalCartPrice)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
@@ -152,7 +150,7 @@ export function CartContainer({ cartData }: CartContainerProps) {
 
               <div className="flex justify-between font-semibold text-lg mb-6">
                 <span>Total</span>
-                <span>{formatPrice(cartData.data.totalCartPrice)}</span>
+                <span>{formatPrice(innerCartData.data.totalCartPrice)}</span>
               </div>
 
               <Button

@@ -32,7 +32,7 @@ export function CartProduct({
       if (count != item.count) {
         onUpdateItemCount(item.product._id, count);
       }
-    }, 500);
+    }, 300);
     setTimeOutId(id);
 
     setProductCount(count);
