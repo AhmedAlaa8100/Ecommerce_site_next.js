@@ -222,7 +222,7 @@ techmart-ecommerce/
 ![User Orders](./Screenshots/OrdersPage.png)
 
 
-![User OrderInfo](./Screenshots/OrderInfo.png.png)
+![User OrderInfo](./Screenshots/OrderInfo.png)
 
 
 ## 🤝 Contributing
