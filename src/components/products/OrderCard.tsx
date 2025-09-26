@@ -23,6 +23,23 @@ interface OrderCardProps {
 export function OrderCard({ order, viewMode = "grid" }: OrderCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Safe modal handlers
+  const handleOpenModal = () => {
+    try {
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Error opening modal:", error);
+    }
+  };
+
+  const handleCloseModal = () => {
+    try {
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error closing modal:", error);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -115,11 +132,7 @@ export function OrderCard({ order, viewMode = "grid" }: OrderCardProps) {
                 </div>
               </div>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsModalOpen(true)}
-              >
+              <Button variant="outline" size="sm" onClick={handleOpenModal}>
                 View Details
               </Button>
             </div>
@@ -128,7 +141,7 @@ export function OrderCard({ order, viewMode = "grid" }: OrderCardProps) {
         <OrderDetailsModal
           order={order}
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={handleCloseModal}
         />
       </>
     );
@@ -225,7 +238,7 @@ export function OrderCard({ order, viewMode = "grid" }: OrderCardProps) {
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleOpenModal}
           >
             View Details
           </Button>
@@ -234,7 +247,7 @@ export function OrderCard({ order, viewMode = "grid" }: OrderCardProps) {
       <OrderDetailsModal
         order={order}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleCloseModal}
       />
     </>
   );

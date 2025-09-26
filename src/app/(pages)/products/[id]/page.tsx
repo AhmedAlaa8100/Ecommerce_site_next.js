@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Product } from "@/interfaces";
@@ -22,96 +22,90 @@ import { SingleProductResponse, WishlistResponse } from "@/types";
 import { apiService } from "@/services";
 import { AddToCartBtn } from "@/components/products";
 import toast from "react-hot-toast";
+import { handleAddProductToWishlist } from "@/helpers/wishlist";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const [product, setProduct] = useState<Product>();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(-1);
   const [addToCartLoading, setAddToCartLoading] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [wishIds, setWishIds] = useState<Set<string>>(new Set());
+  const [wishlistInitialized, setWishlistInitialized] = useState(false);
 
-  async function fetchProductDetails() {
-    setLoading(true);
-    const response: SingleProductResponse = await apiService.getProductDetails(
-      String(id)
-    );
-    setProduct(response.data);
-    setLoading(false);
-  }
+  const fetchProductDetails = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response: SingleProductResponse =
+        await apiService.getProductDetails(String(id));
+      setProduct(response.data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch product");
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
 
-  async function handleAddProductToCart() {
-    setAddToCartLoading(true);
-    const data = await apiService.addProductToCart(product?._id ?? "");
-    console.log(data);
-    setAddToCartLoading(false);
-    toast(data.message, {
-      icon: "✅",
-      position: "top-center",
-    });
-  }
+  const handleAddProductToCart = useCallback(async () => {
+    if (!product?._id) return;
 
-  async function handleAddProductToWishlist() {
-    if (isWishlisted) {
-      setWishlistLoading(true);
-      const data = await apiService.removeProductFromWishlist(
-        product?._id ?? ""
-      );
-      setIsWishlisted(false);
-      setWishlistLoading(false);
-      setWishIds((prev) => {
-        const next = new Set(prev);
-        if (product?._id) next.delete(product._id);
-        return next;
-      });
+    try {
+      setAddToCartLoading(true);
+      const data = await apiService.addProductToCart(product._id);
       toast(data.message, {
-        icon: "💔",
+        icon: "✅",
         position: "top-center",
       });
-    } else {
-      setWishlistLoading(true);
-      const data = await apiService.addProductToWishlist(product?._id ?? "");
-      setWishlistLoading(false);
-      if (data.status === "success") {
-        toast(data.message, {
-          icon: "❤️",
-          position: "top-center",
-        });
-        setIsWishlisted(true);
-        setWishIds((prev) => {
-          const next = new Set(prev);
-          if (product?._id) next.add(product._id);
-          return next;
-        });
-      } else {
-        toast.error(data.message || "Failed to add product to wishlist", {
-          position: "top-center",
-        });
-      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to add to cart");
+    } finally {
+      setAddToCartLoading(false);
     }
-  }
+  }, [product?._id]);
 
-  useEffect(() => {
-    fetchProductDetails();
-  }, []);
-
-  useEffect(() => {
-    async function getLoggedWishlist() {
+  const getLoggedWishlist = useCallback(async () => {
+    try {
       const wishlist: WishlistResponse =
         await apiService.getLoggedUserWishlist();
-      setWishIds(new Set((wishlist?.data ?? []).map((p: Product) => p._id)));
+      const newWishIds = new Set(
+        (wishlist?.data ?? []).map((p: Product) => p._id)
+      );
+      setWishIds(newWishIds);
+      setWishlistInitialized(true);
+    } catch (err) {
+      console.error("Failed to fetch wishlist:", err);
+      setWishlistInitialized(true);
     }
-    getLoggedWishlist();
   }, []);
 
+  const handleWishlistToggle = useCallback(async () => {
+    if (!product?._id || wishlistLoading) return;
+
+    await handleAddProductToWishlist(
+      setWishIds,
+      setIsWishlisted,
+      setWishlistLoading,
+      product._id,
+      isWishlisted
+    );
+  }, [product?._id, isWishlisted, wishlistLoading]);
+
+  // Update wishlist status when product or wishIds change
   useEffect(() => {
-    if (product?._id) {
+    if (product?._id && wishlistInitialized) {
       setIsWishlisted(wishIds.has(product._id));
     }
-  }, [product?._id, wishIds]);
+  }, [product?._id, wishIds, wishlistInitialized]);
+
+  // Initial data fetch
+  useEffect(() => {
+    fetchProductDetails();
+    getLoggedWishlist();
+  }, [fetchProductDetails, getLoggedWishlist]);
 
   if (loading) {
     return (
@@ -258,10 +252,11 @@ export default function ProductDetailPage() {
             <Button
               variant="outline"
               size="lg"
-              onClick={handleAddProductToWishlist}
+              onClick={handleWishlistToggle}
+              disabled={wishlistLoading || !wishlistInitialized}
             >
-              {wishlistLoading ? (
-                <Loader2 className="animate-spin" />
+              {wishlistLoading || !wishlistInitialized ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : isWishlisted ? (
                 <X className="h-5 w-5 text-gray-500" />
               ) : (

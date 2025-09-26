@@ -175,9 +175,31 @@ class servicesApi {
       headers,
     }).then((res) => res.json());
   }
+  async signUp(
+    name: string,
+    email: string,
+    password: string,
+    rePassword: string,
+    phone: number
+  ) {
+    const headers = await this.#getHeaders();
+    return await fetch(this.#baseUrl + "api/v1/auth/signup", {
+      method: "post",
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        rePassword,
+        phone,
+      }),
+      headers,
+    }).then((res) => res.json());
+  }
 
   async getAllBrands(): Promise<BrandsResponse> {
-    return await fetch(this.#baseUrl + "api/v1/brands").then((res) => res.json());
+    return await fetch(this.#baseUrl + "api/v1/brands").then((res) =>
+      res.json()
+    );
   }
 
   async getSpecificBrand(brandId: string): Promise<SingleBrandResponse> {
@@ -192,19 +214,24 @@ class servicesApi {
     );
   }
 
-  async getSpecificCategory(categoryId: string): Promise<SingleCategoryResponse> {
-    return await fetch(this.#baseUrl + "api/v1/categories/" + categoryId).then((res) =>
-      res.json()
+  async getSpecificCategory(
+    categoryId: string
+  ): Promise<SingleCategoryResponse> {
+    return await fetch(this.#baseUrl + "api/v1/categories/" + categoryId).then(
+      (res) => res.json()
     );
   }
 
   async getAllUserOrders(userId: string): Promise<OrdersResponse> {
     const headers = await this.#getHeaders();
-    const response = await fetch(this.#baseUrl + "api/v1/orders/user/" + userId, {
-      headers,
-    });
+    const response = await fetch(
+      this.#baseUrl + "api/v1/orders/user/" + userId,
+      {
+        headers,
+      }
+    );
     const data = await response.json();
-    
+
     // Handle different response structures
     if (Array.isArray(data)) {
       return { data };

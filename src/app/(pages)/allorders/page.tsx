@@ -3,19 +3,24 @@ import { apiService } from "@/services";
 
 export default async function AllOrders() {
   async function verifyTokenResponse() {
-    const verifyTokenResponse = await apiService.verifytoken();
-    return verifyTokenResponse;
+    try {
+      const verifyTokenResponse = await apiService.verifytoken();
+      return verifyTokenResponse;
+    } catch (error) {
+      console.error("Error verifying token:", error);
+      return null;
+    }
   }
 
   const tokenResponse = await verifyTokenResponse();
 
   async function getUserOrders() {
     try {
-      // const orders = await apiService.getAllUserOrders(
-      //   tokenResponse.decoded.id
-      // );
+      if (!tokenResponse?.decoded?.id) {
+        return { data: [] };
+      }
       const orders = await apiService.getAllUserOrders(
-        "6407cf6f515bdcf347c09f17"
+        tokenResponse.decoded.id
       );
       return orders;
     } catch (error) {
