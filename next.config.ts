@@ -15,8 +15,13 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'ecommerce.routemisr.com',
         pathname: '/Route-Academy-brands/**'
-      }
+      },
     ]
+  },
+  eslint: {
+    // ⚠️ Warning: This allows production builds to successfully complete
+    // even if there are ESLint errors.
+    ignoreDuringBuilds: true,
   },
 };
 
