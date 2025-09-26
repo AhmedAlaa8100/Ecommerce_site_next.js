@@ -290,16 +290,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Radix UI](https://www.radix-ui.com/) - Accessible components
 - [Lucide](https://lucide.dev/) - Beautiful icons
 
-## 📞 Support
-
-- 📧 Email: support@techmart.com
-- 💬 Discord: [Join our community](https://discord.gg/techmart)
-- 📖 Documentation: [docs.techmart.com](https://docs.techmart.com)
-
 ---
 
 <div align="center">
-  <p>Made with ❤️ by the TechMart Team</p>
+  <p>Made with ❤️</p>
   <p>
     <a href="#-techmart---modern-ecommerce-platform">⬆️ Back to top</a>
   </p>
