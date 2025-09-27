@@ -294,7 +294,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
   <p>Made with ❤️</p>
-  <img src="https://visitor-counter-badge.vercel.app/api/AhmedAlaa8100/Ecommerce_site_next.js" alt="Repo Views"/>
+  <img src="https://dynamic-repo-badges.vercel.app/svg/count/1/Repository%20Views/Ecommerce_site_next.js" alt="Repo Views"/>
   <p>
     <a href="#-techmart---modern-ecommerce-platform">⬆️ Back to top</a>
   </p>
