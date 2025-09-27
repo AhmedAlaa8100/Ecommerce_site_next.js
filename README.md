@@ -294,7 +294,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
   <p>Made with ❤️</p>
-  ![Repo Views](https://komarev.com/ghpvc/?username=AhmedAlaa8100&repo=Ecommerce_site_next.js&color=blue&style=flat)
+  <img src="https://visitor-counter-badge.vercel.app/api/AhmedAlaa8100/Ecommerce_site_next.js" alt="Repo Views"/>
   <p>
     <a href="#-techmart---modern-ecommerce-platform">⬆️ Back to top</a>
   </p>
