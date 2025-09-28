@@ -150,7 +150,7 @@ export default function CategoryDetailsPage() {
       </div>
 
       {/* View toggle */}
-      <div className="flex items-center mb-10 justify-end p-2">
+      <div className="hidden md:flex items-center mb-10 justify-end p-2">
         <div className="flex items-center border rounded-md">
           <Button
             variant={viewMode === "grid" ? "default" : "ghost"}

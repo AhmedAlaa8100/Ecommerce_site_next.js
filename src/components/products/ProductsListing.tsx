@@ -24,7 +24,7 @@ export default function ProductsListing({
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   return (
     <>
-      <div className="flex items-center mb-10 justify-end p-2">
+      <div className="hidden md:flex items-center mb-10 justify-end p-2">
         <div className="flex items-center border rounded-md">
           <Button
             variant={viewMode === "grid" ? "default" : "ghost"}

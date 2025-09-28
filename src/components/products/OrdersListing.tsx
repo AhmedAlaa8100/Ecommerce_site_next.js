@@ -10,6 +10,8 @@ import { OrderResponse } from "@/interfaces/order";
 export default function OrdersListing({ orders }: { orders: OrderResponse[] }) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
+  // Default to list view on mobile
+
   // Safe view mode handler
   const handleViewModeChange = (mode: "grid" | "list") => {
     try {
@@ -38,7 +40,7 @@ export default function OrdersListing({ orders }: { orders: OrderResponse[] }) {
 
   return (
     <>
-      <div className="flex items-center mb-10 justify-end p-2">
+      <div className="hidden md:flex items-center mb-10 justify-end p-2 ">
         <div className="flex items-center border rounded-md">
           <Button
             variant={viewMode === "grid" ? "default" : "ghost"}
