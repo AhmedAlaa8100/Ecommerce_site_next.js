@@ -47,7 +47,7 @@ export function ProductCard({
 
     setIsAddingToCart(false);
     toast.success(response.message, {
-      position: "top-center",
+      position: "top-right",
     });
   }
 
@@ -114,7 +114,7 @@ export function ProductCard({
             </div>
 
             <span className="text-sm text-muted-foreground">
-              {(product.sold > 100000) ? "100000+" : product.sold} sold
+              {product.sold > 100000 ? "100000+" : product.sold} sold
             </span>
           </div>
 
@@ -239,7 +239,7 @@ export function ProductCard({
             {formatPrice(product.price)}
           </span>
           <span className="text-xs text-muted-foreground">
-          {(product.sold > 100000) ? "100000+" : product.sold} sold
+            {product.sold > 100000 ? "100000+" : product.sold} sold
           </span>
         </div>
 

@@ -25,8 +25,8 @@ export const handleAddProductToWishlist = async (
     // Remove from wishlist display if callback is provided
     removeFromWishlistDisplay?.(productId);
     toast(data.message, {
-      icon: "💔",
-      position: "top-center",
+      icon: "✅",
+      position: "bottom-center",
     });
   } else {
     setWishlistLoading(true);
@@ -34,8 +34,8 @@ export const handleAddProductToWishlist = async (
     setWishlistLoading(false);
     if (data.status === "success") {
       toast(data.message, {
-        icon: "❤️",
-        position: "top-center",
+        icon: "✅",
+        position: "top-right",
       });
       setIsWishlisted(true);
       setWishIds((prev: Set<string>) => {
@@ -45,7 +45,7 @@ export const handleAddProductToWishlist = async (
       });
     } else {
       toast.error(data.message || "Failed to add product to wishlist", {
-        position: "top-center",
+        position: "top-right",
       });
     }
   }

@@ -58,7 +58,7 @@ export default function ProductDetailPage() {
       const data = await apiService.addProductToCart(product._id);
       toast(data.message, {
         icon: "✅",
-        position: "top-center",
+        position: "top-right",
       });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to add to cart");

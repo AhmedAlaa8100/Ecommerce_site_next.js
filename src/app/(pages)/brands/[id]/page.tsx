@@ -62,7 +62,7 @@ export default function BrandDetailsPage() {
           setWishIds((prev) => new Set(prev).add(productId));
         } else {
           toast.error(data.message || "Failed to add product to wishlist", {
-            position: "top-center",
+            position: "top-right",
           });
         }
       }
