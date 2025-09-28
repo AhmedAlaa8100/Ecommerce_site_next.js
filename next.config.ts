@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
         hostname: 'ecommerce.routemisr.com',
         pathname: '/Route-Academy-brands/**'
       },
+      {
+        protocol: 'https',
+        hostname: 'ecommerce.routemisr.com',
+        pathname: '/Route-Academy-categories/**'
+      },
     ]
   },
   eslint: {
