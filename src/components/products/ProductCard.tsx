@@ -64,7 +64,10 @@ export function ProductCard({
 
   if (viewMode === "list") {
     return (
-      <Link href={`/products/${product.id}`} className="flex gap-4 p-4 border rounded-lg hover:shadow-md transition-shadow">
+      <Link
+        href={`/products/${product.id}`}
+        className="flex gap-4 p-4 border rounded-lg hover:shadow-md transition-shadow"
+      >
         <div className="relative w-32 h-32 flex-shrink-0">
           <Image
             src={product.imageCover}
@@ -169,7 +172,10 @@ export function ProductCard({
   }
 
   return (
-    <Link href={`/products/${product.id}`} className="group relative bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 block">
+    <Link
+      href={`/products/${product.id}`}
+      className="group relative bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 block"
+    >
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden">
         <Image
