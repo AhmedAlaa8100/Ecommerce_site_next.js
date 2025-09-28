@@ -33,8 +33,14 @@ export default function RootLayout({
       >
         <ProvidersContainer>
           <Navbar />
+          <Toaster
+            position="top-right"
+            containerStyle={{
+              top: "80px", // Position below navbar (navbar height is 64px + some padding)
+              zIndex: 40, // Lower than navbar's z-50
+            }}
+          />
           {children}
-          <Toaster position="top-right" />
           <Footer />
         </ProvidersContainer>
       </body>

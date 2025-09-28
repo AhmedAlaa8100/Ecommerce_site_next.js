@@ -26,7 +26,6 @@ export const handleAddProductToWishlist = async (
     removeFromWishlistDisplay?.(productId);
     toast(data.message, {
       icon: "✅",
-      position: "bottom-center",
     });
   } else {
     setWishlistLoading(true);

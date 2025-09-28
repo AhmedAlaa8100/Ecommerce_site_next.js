@@ -125,7 +125,7 @@ export function Navbar() {
             ) : (
               <>
                 <Link href={"/auth/login"}>Login</Link>
-                <Link href={"/auth/register"}>register</Link>
+                <Link href={"/auth/register"}>Register</Link>
               </>
             )}
 

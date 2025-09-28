@@ -43,8 +43,14 @@ export function ProductCard({
     setIsAddingToCart(true);
     const response = await apiService.addProductToCart(product._id);
     console.log("🚀 ~ handleAddToCart ~ response:", response);
+    if (response.status !== "success") {
+      setIsAddingToCart(false);
+      toast.error(response.message || "Failed to add product to cart", {
+        position: "top-right",
+      });
+      return;
+    }
     dispatch(updateCartCount(response.numOfCartItems));
-
     setIsAddingToCart(false);
     toast.success(response.message, {
       position: "top-right",
@@ -58,7 +64,7 @@ export function ProductCard({
 
   if (viewMode === "list") {
     return (
-      <div className="flex gap-4 p-4 border rounded-lg hover:shadow-md transition-shadow">
+      <Link href={`/products/${product.id}`} className="flex gap-4 p-4 border rounded-lg hover:shadow-md transition-shadow">
         <div className="relative w-32 h-32 flex-shrink-0">
           <Image
             src={product.imageCover}
@@ -71,25 +77,22 @@ export function ProductCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start mb-2">
-            <h3 className="font-semibold text-lg line-clamp-2">
-              <Link
-                href={`/products/${product.id}`}
-                className="hover:text-primary transition-colors"
-              >
-                {product.title}
-              </Link>
+            <h3 className="font-semibold text-lg line-clamp-2 hover:text-primary transition-colors">
+              {product.title}
             </h3>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() =>
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 handleAddProductToWishlist?.(
                   product._id,
                   isWishlisted,
                   setIsWishlisted,
                   setWishlistLoading
-                )
-              }
+                );
+              }}
             >
               {wishlistLoading ? (
                 <Loader2 className="animate-spin" />
@@ -126,37 +129,47 @@ export function ProductCard({
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span>
                   Brand:{" "}
-                  <Link
-                    href={`/brands/${product.brand._id}`}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.location.href = `/brands/${product.brand._id}`;
+                    }}
                     className="hover:text-primary hover:underline transition-colors"
                   >
                     {product.brand.name}
-                  </Link>
+                  </button>
                 </span>
                 <span>
                   Category:{" "}
-                  <Link
-                    href={`/categories/${product.category._id}`}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.location.href = `/categories/${product.category._id}`;
+                    }}
                     className="hover:text-primary hover:underline transition-colors"
                   >
                     {product.category.name}
-                  </Link>
+                  </button>
                 </span>
               </div>
             </div>
 
-            <Button onClick={() => handleAddToCart()}>
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Add to Cart
-            </Button>
+            <div onClick={(e) => e.preventDefault()}>
+              <Button onClick={() => handleAddToCart()}>
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Add to Cart
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </Link>
     );
   }
 
   return (
-    <div className="group relative bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
+    <Link href={`/products/${product.id}`} className="group relative bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 block">
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden">
         <Image
@@ -172,14 +185,16 @@ export function ProductCard({
           variant="ghost"
           size="sm"
           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 hover:bg-white"
-          onClick={() =>
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
             handleAddProductToWishlist?.(
               product._id,
               isWishlisted,
               setIsWishlisted,
               setWishlistLoading
-            )
-          }
+            );
+          }}
         >
           {wishlistLoading ? (
             <Loader2 className="animate-spin" />
@@ -202,17 +217,21 @@ export function ProductCard({
       <div className="p-4">
         {/* Brand */}
         <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">
-          <Link
-            href={`/brands/${product.brand._id}`}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = `/brands/${product.brand._id}`;
+            }}
             className="hover:text-primary hover:underline transition-colors"
           >
             {product.brand.name}
-          </Link>
+          </button>
         </p>
 
         {/* Title */}
         <h3 className="font-semibold text-sm mb-2 line-clamp-2 hover:text-primary transition-colors">
-          <Link href={`/products/${product.id}`}>{product.title}</Link>
+          {product.title}
         </h3>
 
         {/* Rating */}
@@ -225,12 +244,16 @@ export function ProductCard({
 
         {/* Category */}
         <p className="text-xs text-muted-foreground mb-2">
-          <Link
-            href={`/categories/${product.category._id}`}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = `/categories/${product.category._id}`;
+            }}
             className="hover:text-primary hover:underline transition-colors"
           >
             {product.category.name}
-          </Link>
+          </button>
         </p>
 
         {/* Price */}
@@ -244,11 +267,13 @@ export function ProductCard({
         </div>
 
         {/* Add to Cart Button */}
-        <AddToCartBtn
-          addToCartLoading={isAddingToCart}
-          handleAddProductToCart={handleAddToCart}
-        />
+        <div onClick={(e) => e.preventDefault()}>
+          <AddToCartBtn
+            addToCartLoading={isAddingToCart}
+            handleAddProductToCart={handleAddToCart}
+          />
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }
