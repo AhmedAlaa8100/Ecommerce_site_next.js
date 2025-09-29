@@ -293,7 +293,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <div align="center">
   <p>Made with ❤️</p>
   <p>
-    <img src="https://komarev.com/ghpvc/?username=AhmedAlaa8100&repo=Ecommerce_site_next.js&style=for-the-badge&color=blue" alt="Repository visits" />
   </p>
   <p>
     <a href="#-techmart---modern-ecommerce-platform">⬆️ Back to top</a>
