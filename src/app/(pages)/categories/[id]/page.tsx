@@ -15,6 +15,10 @@ import {
   WishlistResponse,
 } from "@/types";
 import toast from "react-hot-toast";
+import {
+  checkIsWishlisted,
+  handleAddProductToWishlist,
+} from "@/helpers/wishlist";
 
 export default function CategoryDetailsPage() {
   const params = useParams<{ id: string }>();
@@ -30,51 +34,6 @@ export default function CategoryDetailsPage() {
   const filteredProducts = useMemo(
     () => products.filter((p) => p.category?._id === categoryId),
     [products, categoryId]
-  );
-
-  const handleAddProductToWishlist = useCallback(
-    async (
-      productId: string,
-      isWishlisted: boolean,
-      setIsWishlisted: (value: boolean) => void,
-      setWishlistLoading: (value: boolean) => void
-    ) => {
-      if (isWishlisted) {
-        setWishlistLoading(true);
-        const data = await apiService.removeProductFromWishlist(
-          productId ?? ""
-        );
-        setIsWishlisted(false);
-        setWishlistLoading(false);
-        setWishIds((prev) => {
-          const next = new Set(prev);
-          next.delete(productId);
-          return next;
-        });
-        toast(data.message, { icon: "💔", position: "top-center" });
-      } else {
-        setWishlistLoading(true);
-        const data = await apiService.addProductToWishlist(productId ?? "");
-        setWishlistLoading(false);
-        if (data.status === "success") {
-          toast(data.message, { icon: "❤️", position: "top-center" });
-          setIsWishlisted(true);
-          setWishIds((prev) => new Set(prev).add(productId));
-        } else {
-          toast.error(data.message || "Failed to add product to wishlist", {
-            position: "top-right",
-          });
-        }
-      }
-    },
-    []
-  );
-
-  const checkIsWishlisted = useCallback(
-    (setIsWishlisted: (value: boolean) => void, productId: string) => {
-      setIsWishlisted(wishIds.has(productId));
-    },
-    [wishIds]
   );
 
   async function fetchData() {
@@ -184,8 +143,23 @@ export default function CategoryDetailsPage() {
             key={product._id}
             product={product}
             viewMode={viewMode}
-            handleAddProductToWishlist={handleAddProductToWishlist}
-            checkIsWishlisted={checkIsWishlisted}
+            handleAddProductToWishlist={(
+              productId,
+              isWishlisted,
+              setIsWishlisted,
+              setWishlistLoading
+            ) =>
+              handleAddProductToWishlist(
+                setWishIds,
+                setIsWishlisted,
+                setWishlistLoading,
+                productId,
+                isWishlisted
+              )
+            }
+            checkIsWishlisted={(setIsWishlisted, productId) =>
+              checkIsWishlisted(setIsWishlisted, productId, wishIds)
+            }
           />
         ))}
       </div>
